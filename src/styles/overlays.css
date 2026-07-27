@@ -1,0 +1,49 @@
+﻿.external-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 15;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(8px);
+}
+
+.external-dialog {
+  width: min(520px, 100%);
+  border: 1px solid #111111;
+  background: #ffffff;
+  padding: 24px;
+}
+
+.external-dialog p {
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.external-dialog h2 {
+  margin-bottom: 18px;
+  font-size: clamp(26px, 5vw, 44px);
+}
+
+.external-dialog span {
+  display: block;
+  padding: 12px;
+  border: 1px solid #111111;
+  overflow-wrap: anywhere;
+}
+
+.external-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.external-actions button {
+  min-height: 40px;
+  padding: 8px 14px;
+}
+
+

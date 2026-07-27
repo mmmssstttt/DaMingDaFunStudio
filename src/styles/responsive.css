@@ -1,0 +1,105 @@
+﻿@media (max-width: 760px) {
+  .hero-section {
+    min-height: 100vh;
+    padding: 18px;
+  }
+
+  .wire-hero {
+    inset: -4vh -4vw;
+  }
+
+  .hero-fixed-layer {
+    inset: 18px;
+  }
+
+  .corner-tags {
+    top: auto;
+    right: 0;
+    bottom: 12px;
+    left: auto;
+    width: min(132px, 34vw);
+    gap: 6px;
+  }
+
+  .corner-tags button {
+    min-height: 32px;
+    padding: 5px 7px;
+    font-size: 11px;
+  }
+
+  .studio-statement {
+    left: 0;
+    top: 158px;
+    bottom: auto;
+    width: min(210px, 52vw);
+    padding: 10px;
+    font-size: 13px;
+  }
+
+  .work-card,
+  .contact-grid,
+  .detail-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .member-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    overflow-x: auto;
+  }
+
+  .large-frame,
+  .detail-visual {
+    min-height: 220px;
+    max-height: 38vh;
+    font-size: clamp(22px, 10vw, 48px);
+  }
+
+  .work-card {
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .item-copy {
+    min-height: 150px;
+  }
+
+  .member-card {
+    min-height: 168px;
+    padding: 10px;
+  }
+
+  .avatar-frame {
+    width: min(64px, 72%);
+    margin-inline: auto;
+    margin-bottom: 10px;
+    font-size: 11px;
+    text-align: center;
+  }
+
+  .mail-frame,
+  .form-frame {
+    min-height: 190px;
+  }
+
+  .mail-frame {
+    font-size: clamp(12px, 3.25vw, 20px);
+  }
+
+  .portrait {
+    width: min(180px, 48vw);
+  }
+}
+
+@media (hover: none), (pointer: coarse) {
+  body,
+  a,
+  button {
+    cursor: auto;
+  }
+
+  .hamster-cursor {
+    display: none;
+  }
+}
+

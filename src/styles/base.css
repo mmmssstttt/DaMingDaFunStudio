@@ -1,0 +1,68 @@
+﻿:root {
+  color: #111111;
+  background: #ffffff;
+  font-family: Inter, "Noto Sans TC", "Source Han Sans TC", "Microsoft JhengHei", Arial, sans-serif;
+  font-weight: 400;
+  line-height: 1.5;
+  scroll-behavior: auto;
+}
+
+* {
+  box-sizing: border-box;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+body {
+  margin: 0;
+  color: #111111;
+  background: #ffffff;
+  cursor: none;
+}
+
+a,
+button {
+  color: inherit;
+  font: inherit;
+  cursor: none;
+}
+
+button {
+  background: #ffffff;
+  border: 1px solid #111111;
+  cursor: none;
+  transition: transform 220ms ease, filter 220ms ease;
+  transform-origin: center;
+}
+
+button:hover,
+button:focus-visible,
+button.is-pointer-hover,
+.mail-frame:hover,
+.mail-frame:focus-visible,
+.mail-frame.is-pointer-hover,
+.member-card:hover,
+.member-card:focus-visible,
+.member-card.is-pointer-hover,
+.back-link:hover,
+.back-link:focus-visible,
+.back-link.is-pointer-hover {
+  transform: scale(1.04);
+}
+
+.route-entering body {
+  animation: routeFade 420ms ease both;
+}
+
+@keyframes routeFade {
+  from {
+    opacity: 0.2;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
