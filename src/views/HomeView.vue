@@ -30,7 +30,6 @@ const { copied, copy: copyEmail } = useClipboard(email)
         }"
       >
         <header class="site-title-block">
-          <p class="eyebrow">網站標題</p>
           <h1 id="site-title">
             大<span class="ming-mark">明</span>大放studio
             <small>DaMingDaFun studio</small>
@@ -49,7 +48,6 @@ const { copied, copy: copyEmail } = useClipboard(email)
 
     <section id="works" class="content-section" aria-labelledby="works-title">
       <div class="section-heading">
-        <p>區塊名稱</p>
         <h2 id="works-title">商業作品</h2>
       </div>
       <div class="work-list">
@@ -66,7 +64,6 @@ const { copied, copy: copyEmail } = useClipboard(email)
 
     <section id="members" class="content-section" aria-labelledby="members-title">
       <div class="section-heading">
-        <p>區塊名稱</p>
         <h2 id="members-title">成員</h2>
       </div>
       <div class="member-grid">
@@ -80,7 +77,6 @@ const { copied, copy: copyEmail } = useClipboard(email)
 
     <section id="contact" class="content-section contact-section" aria-labelledby="contact-title">
       <div class="section-heading">
-        <p>區塊名稱</p>
         <h2 id="contact-title">工作室信箱</h2>
       </div>
       <div class="contact-grid">

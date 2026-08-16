@@ -3,12 +3,8 @@ import { onMounted, onUnmounted, ref } from 'vue'
 import { RouterView, useRouter } from 'vue-router'
 
 const router = useRouter()
-const cursorX = ref(0)
-const cursorY = ref(0)
-const cursorVisible = ref(false)
 const externalUrl = ref('')
 let externalClickHandler
-let hoveredElement = null
 let scrollSaveFrame = 0
 
 function getScrollKey() {
@@ -26,7 +22,6 @@ function scheduleScrollSave() {
   scrollSaveFrame = requestAnimationFrame(() => {
     scrollSaveFrame = 0
     saveScrollPosition()
-    refreshHoverTarget()
   })
 }
 
@@ -60,17 +55,6 @@ function continueExternalLink() {
   window.location.href = url
 }
 
-function updateCursor(event) {
-  cursorX.value = event.clientX
-  cursorY.value = event.clientY
-  cursorVisible.value = true
-  refreshHoverTarget()
-}
-
-function hideCursor() {
-  cursorVisible.value = false
-}
-
 function preventTextSelection(event) {
   event.preventDefault()
 }
@@ -81,21 +65,9 @@ function preventSelectAll(event) {
   }
 }
 
-function refreshHoverTarget() {
-  const target = document.elementFromPoint(cursorX.value, cursorY.value)?.closest(
-    'button, a, .large-frame, .member-card, .mail-frame, .back-link, .ming-mark',
-  )
-  if (hoveredElement === target) return
-  hoveredElement?.classList.remove('is-pointer-hover')
-  hoveredElement = target
-  hoveredElement?.classList.add('is-pointer-hover')
-}
-
 onMounted(() => {
   installExternalGuard()
   restoreScrollPosition()
-  window.addEventListener('pointermove', updateCursor, { passive: true })
-  window.addEventListener('pointerleave', hideCursor)
   window.addEventListener('scroll', scheduleScrollSave, { passive: true })
   window.addEventListener('pagehide', saveScrollPosition)
   document.addEventListener('selectstart', preventTextSelection)
@@ -104,13 +76,10 @@ onMounted(() => {
 
 onUnmounted(() => {
   if (externalClickHandler) document.removeEventListener('click', externalClickHandler, true)
-  window.removeEventListener('pointermove', updateCursor)
-  window.removeEventListener('pointerleave', hideCursor)
   window.removeEventListener('scroll', scheduleScrollSave)
   window.removeEventListener('pagehide', saveScrollPosition)
   document.removeEventListener('selectstart', preventTextSelection)
   document.removeEventListener('keydown', preventSelectAll)
-  hoveredElement?.classList.remove('is-pointer-hover')
 })
 
 router.afterEach(() => {
@@ -136,13 +105,5 @@ router.afterEach(() => {
         <button type="button" @click="continueExternalLink">Continue</button>
       </div>
     </div>
-  </div>
-  <div
-    class="hamster-cursor"
-    :class="{ 'is-visible': cursorVisible }"
-    :style="{ '--cursor-x': `${cursorX}px`, '--cursor-y': `${cursorY}px` }"
-    aria-hidden="true"
-  >
-    <img src="/assets/hamster-cursor.png" alt="" />
   </div>
 </template>

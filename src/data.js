@@ -4,6 +4,7 @@ export const works = [
     title: '工業設計',
     subtitle: 'Industrial Design',
     summary: '大型作品圖框 / 產品輪廓 / 使用情境 / 材料結構',
+    description: '從日常使用的細節開始，透過比例、材質與結構反覆測試，整理出兼顧直覺操作與製作條件的產品方向。',
     detail: ['作品名稱', '設計目標', '使用情境', '模型與打樣', '量產溝通'],
   },
   {
@@ -11,6 +12,7 @@ export const works = [
     title: '互動設計',
     subtitle: 'Interaction Design',
     summary: '大型作品圖框 / 操作流程 / 介面原型 / 體驗節點',
+    description: '以使用者的行為與感受為核心，將操作流程拆解成清楚的節點，並透過原型測試逐步調整互動節奏。',
     detail: ['作品名稱', '互動流程', '介面狀態', '使用者測試', '輸出規格'],
   },
   {
@@ -18,6 +20,7 @@ export const works = [
     title: '虛擬實境',
     subtitle: 'Virtual Reality',
     summary: '大型作品圖框 / 空間配置 / 即時互動 / 沉浸敘事',
+    description: '結合空間敘事、即時演算與感官回饋，讓參與者能在虛擬環境中自由探索，建立連續而自然的沉浸體驗。',
     detail: ['作品名稱', '空間腳本', '3D模型', '即時演算', '硬體測試'],
   },
 ]

@@ -8,6 +8,13 @@
     inset: -4vh -4vw;
   }
 
+  .particle-caption {
+    right: calc(4vw + 10px);
+    bottom: calc(4vh + 10px);
+    min-width: 0;
+    padding: 0;
+  }
+
   .hero-fixed-layer {
     inset: 18px;
   }
@@ -17,7 +24,7 @@
     right: 0;
     bottom: 12px;
     left: auto;
-    width: min(132px, 34vw);
+    width: fit-content;
     gap: 6px;
   }
 
@@ -32,7 +39,7 @@
     top: 158px;
     bottom: auto;
     width: min(210px, 52vw);
-    padding: 10px;
+    padding: 0;
     font-size: 13px;
   }
 
@@ -53,6 +60,51 @@
     min-height: 220px;
     max-height: 38vh;
     font-size: clamp(22px, 10vw, 48px);
+  }
+
+  .work-detail-hero {
+    min-height: 0;
+    max-height: none;
+    height: min(50vh, 460px);
+    aspect-ratio: auto;
+    font-size: clamp(24px, 8vw, 46px);
+  }
+
+  .work-detail-intro {
+    grid-template-columns: 1fr;
+    gap: 24px;
+    padding: 54px 0 66px;
+  }
+
+  .work-detail-shell > .back-link {
+    top: 18px;
+    left: 18px;
+    min-height: 30px;
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+
+  .work-detail-header {
+    top: 0;
+    right: 0;
+    max-width: 68%;
+    padding: 0;
+  }
+
+  .work-detail-page {
+    padding-top: 74px;
+  }
+
+  .work-gallery-card {
+    flex-basis: calc(100% - var(--gallery-peek));
+  }
+
+  .related-gallery-block {
+    margin-top: 90px;
+  }
+
+  .related-work-card {
+    flex-basis: 78vw;
   }
 
   .work-card {
@@ -92,14 +144,12 @@
 }
 
 @media (hover: none), (pointer: coarse) {
-  body,
-  a,
-  button {
-    cursor: auto;
+  .horizontal-drag {
+    scroll-snap-type: x proximity;
   }
 
-  .hamster-cursor {
-    display: none;
+  body {
+    cursor: auto;
   }
 }
 

@@ -1,6 +1,14 @@
 ﻿:root {
-  color: #111111;
-  background: #ffffff;
+  --ink: #11120f;
+  --paper: #f6f7f0;
+  --surface: #ffffff;
+  --lime: #dfff62;
+  --lime-soft: #e9ffc0;
+  --pink: #ffc8c5;
+  --lilac: #cbc8ff;
+  --sage: #dce9d2;
+  color: var(--ink);
+  background: var(--paper);
   font-family: Inter, "Noto Sans TC", "Source Han Sans TC", "Microsoft JhengHei", Arial, sans-serif;
   font-weight: 400;
   line-height: 1.5;
@@ -15,23 +23,24 @@
 
 body {
   margin: 0;
-  color: #111111;
-  background: #ffffff;
-  cursor: none;
+  color: var(--ink);
+  background: var(--paper);
+  cursor: auto;
 }
 
 a,
 button {
   color: inherit;
   font: inherit;
-  cursor: none;
+  cursor: pointer;
 }
 
 button {
-  background: #ffffff;
-  border: 1px solid #111111;
-  cursor: none;
-  transition: transform 220ms ease, filter 220ms ease;
+  background: rgba(255, 255, 255, 0.86);
+  border: 1px solid var(--ink);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: transform 220ms ease, filter 220ms ease, background-color 220ms ease, color 220ms ease;
   transform-origin: center;
 }
 
@@ -48,6 +57,13 @@ button.is-pointer-hover,
 .back-link:focus-visible,
 .back-link.is-pointer-hover {
   transform: scale(1.04);
+}
+
+button:hover,
+button:focus-visible,
+button.is-pointer-hover {
+  color: #ffffff;
+  background: var(--ink);
 }
 
 .route-entering body {
