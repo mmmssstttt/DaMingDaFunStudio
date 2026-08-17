@@ -15,6 +15,20 @@
   scroll-behavior: auto;
 }
 
+:root {
+  --visual-viewport-height: 100dvh;
+  --visual-viewport-top: 0px;
+}
+
+html,
+body,
+#app {
+  width: 100%;
+  max-width: 100%;
+  min-height: 100%;
+  overflow-x: clip;
+}
+
 * {
   box-sizing: border-box;
   user-select: none;
@@ -59,6 +73,25 @@ button.is-pointer-hover,
   transform: scale(1.04);
 }
 
+img {
+  display: block;
+  max-width: 100%;
+  -webkit-user-drag: none;
+  user-drag: none;
+}
+
+main,
+section,
+article,
+header,
+footer,
+nav,
+div,
+a,
+button {
+  min-width: 0;
+}
+
 button:hover,
 button:focus-visible,
 button.is-pointer-hover {
@@ -66,7 +99,9 @@ button.is-pointer-hover {
   background: var(--ink);
 }
 
-.route-entering body {
+.route-entering .site-shell,
+.route-entering .work-detail-page,
+.route-entering .member-detail {
   animation: routeFade 420ms ease both;
 }
 

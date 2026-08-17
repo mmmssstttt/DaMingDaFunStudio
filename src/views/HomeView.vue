@@ -1,6 +1,5 @@
 <script setup>
 import { RouterLink } from 'vue-router'
-import WireHero from '../components/WireHero.vue'
 import { members, works } from '../data'
 import { useClipboard } from '../composables/useClipboard'
 import { useFocusProgress } from '../composables/useFocusProgress'
@@ -15,12 +14,6 @@ const { copied, copy: copyEmail } = useClipboard(email)
 <template>
   <main id="top" class="site-shell" :class="{ 'is-returning-home': returningHome }">
     <section class="hero-section" aria-labelledby="site-title">
-      <WireHero
-        :style="{
-          '--canvas-blur': `${heroProgress * 5}px`,
-          '--canvas-opacity': 1 - heroProgress * 0.5,
-        }"
-      />
       <div
         class="hero-fixed-layer"
         :style="{
@@ -36,7 +29,7 @@ const { copied, copy: copyEmail } = useClipboard(email)
           </h1>
         </header>
 
-        <p class="studio-statement">一段代表工作室的話</p>
+        <p class="studio-statement">每一件好的設計，都始於理解，終於綻放。</p>
 
         <nav class="corner-tags" aria-label="首頁段落">
           <button type="button" @click="smoothScrollTo('works')">商業作品</button>
@@ -52,7 +45,9 @@ const { copied, copy: copyEmail } = useClipboard(email)
       </div>
       <div class="work-list">
         <RouterLink v-for="work in works" :key="work.slug" class="work-card" :to="`/work/${work.slug}`">
-          <div class="large-frame"><span>{{ work.title }} 大圖片</span></div>
+          <div class="large-frame">
+            <img :src="work.cover" :alt="work.coverAlt" draggable="false" />
+          </div>
           <div class="item-copy">
             <h3>{{ work.title }}</h3>
             <p>{{ work.subtitle }}</p>
@@ -84,7 +79,7 @@ const { copied, copy: copyEmail } = useClipboard(email)
           <a class="mail-frame" :href="`mailto:${email}`">{{ email }}</a>
           <button class="copy-button" type="button" @click="copyEmail">{{ copied ? 'Copied' : 'Copy' }}</button>
         </div>
-        <div class="form-frame">Google 標單區塊</div>
+        <div class="form-frame">產品、體驗或打樣需求，歡迎來信聊聊。</div>
       </div>
     </section>
 

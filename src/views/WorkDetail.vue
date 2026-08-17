@@ -10,16 +10,35 @@ const otherWorks = computed(() => works.filter((item) => item.slug !== work.valu
 const workGallery = ref(null)
 const relatedGallery = ref(null)
 const showTopButton = ref(false)
+const selectedPreview = ref(null)
+const isBackLeaving = ref(false)
+const previousPath = computed(() => {
+  route.fullPath
+  return typeof window.history.state?.back === 'string' ? window.history.state.back : null
+})
+const returnsToHome = computed(() => previousPath.value === '/' || previousPath.value === '#/' || previousPath.value?.endsWith('#/'))
+const backLabel = computed(() => (returnsToHome.value ? '回主頁' : '回上一頁'))
 const workCarouselState = reactive({ canScroll: false, canPrev: false, canNext: false })
 const relatedCarouselState = reactive({ canScroll: false, canPrev: false, canNext: false })
 let dragState = null
+let suppressPreviewUntil = 0
 const scrollAnimations = new WeakMap()
 
 function goBack() {
-  if (window.history.length > 1) {
-    router.back()
+  if (isBackLeaving.value) return
+  const navigate = () => {
+    if (previousPath.value?.startsWith('/')) {
+      router.back()
+    } else {
+      router.push('/')
+    }
+  }
+
+  if (returnsToHome.value) {
+    isBackLeaving.value = true
+    window.setTimeout(navigate, 240)
   } else {
-    router.push('/')
+    navigate()
   }
 }
 
@@ -91,7 +110,6 @@ function scrollGallery(scroller, direction) {
 
 function startDrag(event) {
   if (event.pointerType !== 'mouse' || event.button !== 0) return
-  event.preventDefault()
   const scroller = event.currentTarget
   const previousFrame = scrollAnimations.get(scroller)
   if (previousFrame) cancelAnimationFrame(previousFrame)
@@ -104,15 +122,18 @@ function startDrag(event) {
     startScrollLeft: scroller.scrollLeft,
     moved: false,
   }
-  scroller.classList.add('is-dragging')
-  scroller.setPointerCapture(event.pointerId)
 }
 
 function moveDrag(event) {
   if (!dragState || dragState.pointerId !== event.pointerId) return
-  event.preventDefault()
   const distance = event.clientX - dragState.startX
-  if (Math.abs(distance) > 6) dragState.moved = true
+  if (Math.abs(distance) <= 6 && !dragState.moved) return
+  event.preventDefault()
+  if (!dragState.moved) {
+    dragState.moved = true
+    dragState.scroller.classList.add('is-dragging')
+    dragState.scroller.setPointerCapture(event.pointerId)
+  }
   dragState.scroller.scrollLeft = dragState.startScrollLeft - distance
 }
 
@@ -127,8 +148,36 @@ function endDrag(event) {
   if (scroller.hasPointerCapture(event.pointerId)) {
     scroller.releasePointerCapture(event.pointerId)
   }
+  if (dragState.moved) suppressPreviewUntil = performance.now() + 280
   dragState = null
   animateGallery(scroller, target, 420)
+}
+
+function openPreview(item, index) {
+  if (performance.now() < suppressPreviewUntil) return
+  selectedPreview.value = { item, index }
+  document.documentElement.classList.add('has-gallery-preview')
+}
+
+function openHeroPreview() {
+  openPreview(
+    {
+      src: work.value.cover,
+      alt: work.value.coverAlt,
+      caption: work.value.title,
+    },
+    -1,
+  )
+}
+
+function closePreview(event) {
+  event?.stopPropagation?.()
+  selectedPreview.value = null
+  document.documentElement.classList.remove('has-gallery-preview')
+}
+
+function handlePreviewKeydown(event) {
+  if (event.key === 'Escape' && selectedPreview.value) closePreview(event)
 }
 
 function updateTopButton() {
@@ -151,8 +200,10 @@ function scrollToTop() {
 }
 
 onActivated(() => {
+  isBackLeaving.value = false
   window.addEventListener('scroll', updateTopButton, { passive: true })
   window.addEventListener('resize', refreshCarousels, { passive: true })
+  window.addEventListener('keydown', handlePreviewKeydown)
   updateTopButton()
   refreshCarousels()
 })
@@ -160,11 +211,15 @@ onActivated(() => {
 onDeactivated(() => {
   window.removeEventListener('scroll', updateTopButton)
   window.removeEventListener('resize', refreshCarousels)
+  window.removeEventListener('keydown', handlePreviewKeydown)
+  closePreview()
 })
 
 watch(
   () => work.value.slug,
   () => {
+    isBackLeaving.value = false
+    closePreview()
     nextTick(() => {
       workGallery.value?.scrollTo({ left: 0 })
       relatedGallery.value?.scrollTo({ left: 0 })
@@ -176,20 +231,34 @@ watch(
 
 <template>
   <main class="detail-shell work-detail-shell" :class="`work-${work.slug}`">
-    <button class="back-link" type="button" @click="goBack">回上一頁</button>
+    <button class="back-link" :class="{ 'is-leaving': isBackLeaving }" type="button" @click="goBack">{{ backLabel }}</button>
     <article class="work-detail-page">
       <header class="work-detail-header">
         <h1>{{ work.title }}</h1>
       </header>
 
-      <div class="detail-visual work-detail-hero">{{ work.title }} 詳細大圖片</div>
+      <div class="detail-visual work-detail-hero">
+        <button
+          class="work-hero-trigger"
+          type="button"
+          :aria-label="`放大檢視：${work.title}`"
+          @click="openHeroPreview"
+        >
+          <img :src="work.cover" :alt="work.coverAlt" draggable="false" />
+        </button>
+      </div>
 
       <section class="work-detail-intro">
         <h2>{{ work.subtitle }}</h2>
         <div>
           <p>{{ work.summary }}</p>
           <p>{{ work.description }}</p>
-          <p class="future-note">未來方向：粒子即時演算互動 / 3D模型呈現互動</p>
+          <dl class="work-meta">
+            <div><dt>年份</dt><dd>{{ work.year }}</dd></div>
+            <div><dt>合作單位</dt><dd>{{ work.client }}</dd></div>
+            <div><dt>設計範圍</dt><dd>{{ work.scope }}</dd></div>
+          </dl>
+          <p class="work-highlight">{{ work.highlight }}</p>
         </div>
       </section>
 
@@ -208,9 +277,16 @@ watch(
           @pointerup="endDrag"
           @pointercancel="endDrag"
         >
-          <figure v-for="(item, index) in work.detail" :key="item" class="work-gallery-card">
-            <div class="gallery-visual" :class="`visual-${(index % 5) + 1}`" aria-hidden="true"></div>
-            <figcaption>{{ item }}</figcaption>
+          <figure v-for="(item, index) in work.gallery" :key="item.src" class="work-gallery-card">
+            <button
+              class="gallery-preview-trigger"
+              type="button"
+              :aria-label="`放大檢視：${item.caption}`"
+              @click="openPreview(item, index)"
+            >
+              <img class="gallery-visual" :src="item.src" :alt="item.alt" loading="lazy" draggable="false" />
+            </button>
+            <figcaption>{{ item.caption }}</figcaption>
           </figure>
         </div>
       </div>
@@ -232,7 +308,7 @@ watch(
             class="related-work-card"
             :to="`/work/${item.slug}`"
           >
-            <div class="related-work-visual" :class="`visual-${index + 2}`" aria-hidden="true"></div>
+            <img class="related-work-visual" :src="item.cover" :alt="item.coverAlt" loading="lazy" draggable="false" />
             <div>
               <h2>{{ item.title }}</h2>
               <p>{{ item.subtitle }}</p>
@@ -241,6 +317,30 @@ watch(
         </nav>
       </div>
     </article>
+
+    <Teleport to="body">
+      <Transition name="gallery-lightbox">
+        <div
+          v-if="selectedPreview"
+          class="gallery-lightbox"
+          role="dialog"
+          aria-modal="true"
+          :aria-label="selectedPreview.item.caption"
+          @click.self="closePreview"
+        >
+          <button class="gallery-lightbox-close" type="button" aria-label="關閉大圖" @click="closePreview">×</button>
+          <div class="gallery-lightbox-content" @click.stop>
+            <img
+              class="gallery-lightbox-visual gallery-visual"
+              :src="selectedPreview.item.src"
+              :alt="selectedPreview.item.alt"
+              draggable="false"
+            />
+            <p>{{ selectedPreview.item.caption }}</p>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
 
     <button
       class="detail-back-to-top"

@@ -2,17 +2,17 @@
 .detail-shell {
   position: relative;
   z-index: 1;
-  background: var(--paper);
+  background: rgba(246, 247, 240, 0.68);
   padding: clamp(28px, 5vw, 72px);
   border-bottom: 1px solid rgba(17, 18, 15, 0.24);
 }
 
 #members {
-  background: var(--surface);
+  background: rgba(255, 255, 255, 0.6);
 }
 
 #contact {
-  background: var(--lime-soft);
+  background: rgba(233, 255, 192, 0.62);
 }
 
 .site-shell.is-returning-home .content-section,
@@ -83,15 +83,15 @@ h2 {
   font-weight: 800;
   text-align: center;
   overflow: hidden;
-  background-color: var(--lime-soft);
+  background-color: rgba(233, 255, 192, 0.72);
   background-image:
     radial-gradient(rgba(17, 18, 15, 0.28) 0.8px, transparent 0.8px),
-    radial-gradient(circle at 20% 80%, rgba(255, 190, 190, 0.8), transparent 42%);
+    radial-gradient(circle at 20% 80%, rgba(255, 190, 190, 0.66), transparent 42%);
   background-size: 5px 5px, 100% 100%;
 }
 
 .work-card:nth-child(2) .large-frame {
-  background-color: var(--lilac);
+  background-color: rgba(203, 200, 255, 0.7);
   background-image:
     radial-gradient(rgba(250, 255, 150, 0.8) 1.2px, transparent 1.2px),
     linear-gradient(135deg, rgba(255, 255, 255, 0.34), transparent);
@@ -99,19 +99,24 @@ h2 {
 }
 
 .work-card:nth-child(3) .large-frame {
-  background-color: var(--sage);
+  background-color: rgba(220, 233, 210, 0.72);
   background-image: radial-gradient(rgba(17, 18, 15, 0.22) 0.7px, transparent 0.7px);
   background-size: 4px 4px;
 }
 
-.large-frame span {
+.large-frame img {
+  width: 100%;
+  height: 100%;
+  min-height: inherit;
+  object-fit: cover;
+  background: transparent;
   transition: transform 420ms ease, filter 420ms ease;
   will-change: transform;
 }
 
-.large-frame:hover span,
-.large-frame:focus-visible span,
-.large-frame.is-pointer-hover span {
+.large-frame:hover img,
+.large-frame:focus-visible img,
+.large-frame.is-pointer-hover img {
   transform: scale(1.08);
 }
 
@@ -148,7 +153,8 @@ h2 {
   padding: 18px;
   border: 0;
   border-radius: 18px;
-  background: var(--paper);
+  background: rgba(246, 247, 240, 0.68);
+  backdrop-filter: blur(5px);
   text-align: center;
   transition: transform 220ms ease, filter 220ms ease;
   transform-origin: center;
@@ -192,7 +198,8 @@ h2 {
   place-items: center;
   border: 0;
   border-radius: 18px;
-  background: rgba(255, 255, 255, 0.64);
+  background: rgba(255, 255, 255, 0.58);
+  backdrop-filter: blur(6px);
   padding: 18px;
   text-align: center;
   word-break: break-word;
@@ -263,7 +270,7 @@ h2 {
 }
 
 .detail-shell {
-  min-height: 100vh;
+  min-height: 100svh;
 }
 
 .back-link {
@@ -274,8 +281,19 @@ h2 {
   border: 1px solid var(--ink);
   border-radius: 999px;
   font-size: 12px;
-  transition: transform 220ms ease, filter 220ms ease;
+  opacity: 1;
+  filter: blur(0);
+  transition: transform 220ms ease, filter 220ms ease, opacity 220ms ease;
   transform-origin: center;
+}
+
+.back-link.is-leaving,
+.back-link.is-leaving:hover,
+.back-link.is-leaving:focus-visible {
+  opacity: 0;
+  filter: blur(10px);
+  transform: translateY(-8px) scale(0.88);
+  pointer-events: none;
 }
 
 .detail-layout {
@@ -310,11 +328,11 @@ h2 {
   padding-inline: clamp(20px, 5vw, 72px);
 }
 
-.work-detail-shell > .back-link {
-  position: absolute;
+.detail-shell > .back-link {
+  position: fixed;
   top: clamp(22px, 3vw, 42px);
   left: clamp(20px, 5vw, 72px);
-  z-index: 4;
+  z-index: 8;
   margin: 0;
 }
 
@@ -346,6 +364,7 @@ h2 {
   margin-bottom: 0;
   font-size: clamp(42px, 6vw, 88px);
   line-height: 0.95;
+  overflow-wrap: anywhere;
 }
 
 .work-detail-hero {
@@ -360,6 +379,39 @@ h2 {
     radial-gradient(circle at 72% 28%, var(--pink), transparent 31%),
     linear-gradient(135deg, transparent 45%, rgba(255, 255, 255, 0.72));
   background-size: 5px 5px, 100% 100%, 100% 100%;
+}
+
+.work-detail-hero img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  transition: transform 320ms ease, filter 320ms ease;
+}
+
+.work-hero-trigger {
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+  overflow: hidden;
+  cursor: zoom-in;
+}
+
+.work-hero-trigger:hover,
+.work-hero-trigger:focus-visible {
+  background: transparent;
+  color: inherit;
+  transform: none;
+}
+
+.work-hero-trigger:hover img,
+.work-hero-trigger:focus-visible img {
+  transform: scale(1.02);
+  filter: saturate(1.05);
 }
 
 .work-interaction-design .work-detail-hero {
@@ -411,6 +463,41 @@ h2 {
   border: 0;
   background: transparent;
   font-size: 14px;
+}
+
+.work-meta {
+  display: grid;
+  gap: 10px;
+  max-width: 760px;
+  margin: 18px 0 0;
+  padding-top: 20px;
+  border-top: 1px solid rgba(17, 18, 15, 0.2);
+}
+
+.work-meta > div {
+  display: grid;
+  grid-template-columns: minmax(86px, 0.24fr) 1fr;
+  gap: 16px;
+}
+
+.work-meta dt {
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.work-meta dd {
+  margin: 0;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+
+.work-detail-intro > div > .work-highlight {
+  margin-top: 18px;
+  padding: 18px 20px;
+  border-radius: 14px;
+  background: rgba(233, 255, 192, 0.64);
+  font-size: clamp(15px, 1.15vw, 18px);
+  font-weight: 650;
 }
 
 .horizontal-drag {
@@ -482,12 +569,44 @@ h2 {
   scroll-snap-align: start;
 }
 
+.gallery-preview-trigger {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: 16px;
+  background: transparent;
+  overflow: hidden;
+  text-align: inherit;
+}
+
+.gallery-preview-trigger:hover,
+.gallery-preview-trigger:focus-visible {
+  color: inherit;
+  background: transparent;
+  transform: none;
+}
+
+.gallery-preview-trigger .gallery-visual {
+  transition: transform 320ms ease, filter 320ms ease;
+}
+
+.gallery-preview-trigger:hover .gallery-visual,
+.gallery-preview-trigger:focus-visible .gallery-visual {
+  transform: scale(1.025);
+  filter: saturate(1.08);
+}
+
 .gallery-visual,
 .related-work-visual {
+  display: block;
+  width: 100%;
   position: relative;
   overflow: hidden;
   border-radius: 16px;
   background-color: var(--lime-soft);
+  object-fit: cover;
+  object-position: center;
 }
 
 .gallery-visual {
@@ -528,6 +647,88 @@ h2 {
   padding-top: 12px;
   font-size: 14px;
   font-weight: 700;
+}
+
+html.has-gallery-preview {
+  overflow: hidden;
+}
+
+.gallery-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  padding: clamp(24px, 5vw, 72px);
+  background: rgba(17, 18, 15, 0.7);
+  backdrop-filter: blur(12px);
+}
+
+.gallery-lightbox-content {
+  display: grid;
+  justify-items: center;
+  width: fit-content;
+  max-width: 92vw;
+  max-height: 88vh;
+}
+
+.gallery-lightbox-visual {
+  width: auto;
+  height: auto;
+  max-width: 92vw;
+  max-height: 78vh;
+  aspect-ratio: auto;
+  object-fit: contain;
+  background: transparent;
+  border-radius: clamp(14px, 2vw, 24px);
+  box-shadow: 0 28px 90px rgba(0, 0, 0, 0.28);
+}
+
+.gallery-lightbox-content p {
+  margin: 12px 0 0;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.gallery-lightbox-close {
+  position: fixed;
+  top: clamp(16px, 3vw, 34px);
+  right: clamp(16px, 3vw, 34px);
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border-color: rgba(255, 255, 255, 0.74);
+  background: rgba(246, 247, 240, 0.82);
+  color: var(--ink);
+  font-size: 28px;
+  line-height: 1;
+}
+
+.gallery-lightbox-enter-active,
+.gallery-lightbox-leave-active {
+  transition: opacity 240ms ease, backdrop-filter 240ms ease;
+}
+
+.gallery-lightbox-enter-active .gallery-lightbox-content,
+.gallery-lightbox-leave-active .gallery-lightbox-content {
+  transition: transform 280ms ease, opacity 220ms ease;
+}
+
+.gallery-lightbox-enter-from,
+.gallery-lightbox-leave-to {
+  opacity: 0;
+  backdrop-filter: blur(0);
+}
+
+.gallery-lightbox-enter-from .gallery-lightbox-content,
+.gallery-lightbox-leave-to .gallery-lightbox-content {
+  opacity: 0;
+  transform: scale(0.94);
 }
 
 .related-work-gallery {
@@ -611,9 +812,9 @@ h2 {
 .site-footer {
   position: relative;
   z-index: 1;
-  padding: 10px clamp(18px, 5vw, 72px);
+  padding: 10px clamp(18px, 5vw, 72px) max(10px, env(safe-area-inset-bottom));
   border-bottom: 1px solid rgba(17, 18, 15, 0.24);
-  background: var(--paper);
+  background: rgba(246, 247, 240, 0.7);
   font-size: 12px;
   font-weight: 650;
   text-align: center;

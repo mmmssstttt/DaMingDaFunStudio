@@ -1,11 +1,20 @@
 <script setup>
 import { onMounted, onUnmounted, ref } from 'vue'
 import { RouterView, useRouter } from 'vue-router'
+import WireHero from './components/WireHero.vue'
 
 const router = useRouter()
 const externalUrl = ref('')
 let externalClickHandler
 let scrollSaveFrame = 0
+
+function syncVisualViewport() {
+  const viewport = window.visualViewport
+  const height = Math.round(viewport?.height || window.innerHeight)
+  const offsetTop = Math.round(viewport?.offsetTop || 0)
+  document.documentElement.style.setProperty('--visual-viewport-height', `${height}px`)
+  document.documentElement.style.setProperty('--visual-viewport-top', `${offsetTop}px`)
+}
 
 function getScrollKey() {
   return `scroll:${window.location.hash || window.location.pathname}`
@@ -65,31 +74,46 @@ function preventSelectAll(event) {
   }
 }
 
+function preventImageDrag(event) {
+  if (event.target instanceof HTMLImageElement) event.preventDefault()
+}
+
 onMounted(() => {
   installExternalGuard()
+  syncVisualViewport()
   restoreScrollPosition()
   window.addEventListener('scroll', scheduleScrollSave, { passive: true })
+  window.addEventListener('resize', syncVisualViewport, { passive: true })
+  window.addEventListener('orientationchange', syncVisualViewport, { passive: true })
+  window.visualViewport?.addEventListener('resize', syncVisualViewport, { passive: true })
+  window.visualViewport?.addEventListener('scroll', syncVisualViewport, { passive: true })
   window.addEventListener('pagehide', saveScrollPosition)
   document.addEventListener('selectstart', preventTextSelection)
   document.addEventListener('keydown', preventSelectAll)
+  document.addEventListener('dragstart', preventImageDrag)
 })
 
 onUnmounted(() => {
   if (externalClickHandler) document.removeEventListener('click', externalClickHandler, true)
   window.removeEventListener('scroll', scheduleScrollSave)
+  window.removeEventListener('resize', syncVisualViewport)
+  window.removeEventListener('orientationchange', syncVisualViewport)
+  window.visualViewport?.removeEventListener('resize', syncVisualViewport)
+  window.visualViewport?.removeEventListener('scroll', syncVisualViewport)
   window.removeEventListener('pagehide', saveScrollPosition)
   document.removeEventListener('selectstart', preventTextSelection)
   document.removeEventListener('keydown', preventSelectAll)
+  document.removeEventListener('dragstart', preventImageDrag)
 })
 
 router.afterEach(() => {
   document.documentElement.classList.add('route-entering')
   window.setTimeout(() => document.documentElement.classList.remove('route-entering'), 420)
-  restoreScrollPosition()
 })
 </script>
 
 <template>
+  <WireHero />
   <RouterView v-slot="{ Component }">
     <KeepAlive>
       <component :is="Component" />
