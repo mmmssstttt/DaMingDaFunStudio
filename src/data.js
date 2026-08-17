@@ -1,3 +1,5 @@
+const asset = (path) => `${import.meta.env.BASE_URL}${path}`
+
 export const works = [
   {
     slug: 'foxbat-education-kit',
@@ -11,31 +13,31 @@ export const works = [
     scope: '產品設計、3D 建模、雷射切割、木作與實體製作',
     highlight:
       '可抽取的標本收納架以兩種槽位分別處理運送固定與展示拿取，翻面後即可成為桌上展示架；箱蓋則整合 A4 文件收納，讓一只提箱同時完成運送與教學布置。',
-    cover: '/images/works/foxbat/cover.webp',
+    cover: asset('images/works/foxbat/cover.webp'),
     coverAlt: '手持狐蝠標本收納架，架上排列多張標本卡',
     gallery: [
       {
-        src: '/images/works/foxbat/cover.webp',
+        src: asset('images/works/foxbat/cover.webp'),
         alt: '手持裝有狐蝠食渣與排遺標本卡的收納架',
         caption: '標本卡與可攜式收納架',
       },
       {
-        src: '/images/works/foxbat/specimen-detail.webp',
+        src: asset('images/works/foxbat/specimen-detail.webp'),
         alt: '透明標本盒與雷雕資訊整合在木製標本卡上',
         caption: '標本卡細節與雷雕辨識資訊',
       },
       {
-        src: '/images/works/foxbat/display-rack.webp',
+        src: asset('images/works/foxbat/display-rack.webp'),
         alt: '標本收納架翻面後作為桌上展示架',
         caption: '收納架翻面後轉換為展示模式',
       },
       {
-        src: '/images/works/foxbat/case-closed.webp',
+        src: asset('images/works/foxbat/case-closed.webp'),
         alt: '關閉的木製狐蝠生態教具提箱',
         caption: '便於攜帶與運送的木製箱體',
       },
       {
-        src: '/images/works/foxbat/case-open.webp',
+        src: asset('images/works/foxbat/case-open.webp'),
         alt: '打開的教具箱內放有標本收納架與文件空間',
         caption: '箱內整合標本、文件與教學用品',
       },
@@ -53,26 +55,26 @@ export const works = [
     scope: '產品設計、機構設計、情境研究與概念視覺化',
     highlight:
       '桌面、棚架與充氣遮蔽結構被整合為同一套展收系統，可依日照、降雨與攤位尺度調整使用型態，讓攤主用更少的搬運量應對多變的戶外環境。',
-    cover: '/images/works/folding-cart/cover.webp',
+    cover: asset('images/works/folding-cart/cover.webp'),
     coverAlt: '摺疊攤車設置於城市市集中的使用情境提案',
     gallery: [
       {
-        src: '/images/works/folding-cart/cover.webp',
+        src: asset('images/works/folding-cart/cover.webp'),
         alt: '城市市集中的摺疊攤車與棚體配置',
         caption: '行動市集使用情境與整體配置',
       },
       {
-        src: '/images/works/folding-cart/weather-modes.webp',
+        src: asset('images/works/folding-cart/weather-modes.webp'),
         alt: '摺疊攤車因應晴天與雨天的兩種展開模式',
         caption: '晴雨模式切換與充氣棚體概念',
       },
       {
-        src: '/images/works/folding-cart/mechanism.webp',
+        src: asset('images/works/folding-cart/mechanism.webp'),
         alt: '滑軌、伸縮桿與摺疊骨架的機構拆解圖',
         caption: '滑軌、伸縮桿與摺疊骨架構造',
       },
       {
-        src: '/images/works/folding-cart/folding-system.webp',
+        src: asset('images/works/folding-cart/folding-system.webp'),
         alt: '攤車桌面與骨架由展開狀態收折為盒型的步驟',
         caption: '收折至盒型的機構與桌面配置',
       },
@@ -90,46 +92,46 @@ export const works = [
     scope: '產品設計、3D 建模、操作規劃與戰績表格設計',
     highlight:
       '設計不只記錄當下比分，也把主動技、應對技、攻擊部位與得失分轉為可追蹤的資料，讓一整天的賽事紀錄能延伸成選手後續訓練的分析依據。',
-    cover: '/images/works/kendo-scoreboard/cover.webp',
+    cover: asset('images/works/kendo-scoreboard/cover.webp'),
     coverAlt: '可站立與折疊的劍道比賽計分板模型',
     gallery: [
       {
-        src: '/images/works/kendo-scoreboard/cover.webp',
+        src: asset('images/works/kendo-scoreboard/cover.webp'),
         alt: '劍道比賽計分板展開後的正反面模型',
         caption: '可折疊的計分板整體構成',
       },
       {
-        src: '/images/works/kendo-scoreboard/configuration.webp',
+        src: asset('images/works/kendo-scoreboard/configuration.webp'),
         alt: '計分板與配件收納的兩種配置',
         caption: '配件與書寫面的配置方式',
       },
       {
-        src: '/images/works/kendo-scoreboard/magnetic-layout.webp',
+        src: asset('images/works/kendo-scoreboard/magnetic-layout.webp'),
         alt: '計分板磁吸配件與內部版面配置',
         caption: '可彈性移動的磁吸模組',
       },
       {
-        src: '/images/works/kendo-scoreboard/support.webp',
+        src: asset('images/works/kendo-scoreboard/support.webp'),
         alt: '計分板背面的傾斜式支撐結構',
         caption: '提升閱讀與穩定性的 25° 支撐',
       },
       {
-        src: '/images/works/kendo-scoreboard/team-sheet.webp',
+        src: asset('images/works/kendo-scoreboard/team-sheet.webp'),
         alt: '劍道團體賽戰績表填寫範例',
         caption: '團體賽戰績表',
       },
       {
-        src: '/images/works/kendo-scoreboard/individual-sheet.webp',
+        src: asset('images/works/kendo-scoreboard/individual-sheet.webp'),
         alt: '劍道個人賽戰績表填寫範例',
         caption: '個人賽戰績表',
       },
       {
-        src: '/images/works/kendo-scoreboard/score-sheet.webp',
+        src: asset('images/works/kendo-scoreboard/score-sheet.webp'),
         alt: '劍道選手得分統計表填寫範例',
         caption: '選手得分與技法統計',
       },
       {
-        src: '/images/works/kendo-scoreboard/lost-score-sheet.webp',
+        src: asset('images/works/kendo-scoreboard/lost-score-sheet.webp'),
         alt: '劍道選手失分統計表填寫範例',
         caption: '選手失分與應對技分析',
       },
