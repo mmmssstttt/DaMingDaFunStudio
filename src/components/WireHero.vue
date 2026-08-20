@@ -61,6 +61,7 @@ projectionCamera.lookAt(0, 0, 0)
 projectionCamera.updateMatrixWorld(true)
 let autoTimer = 0
 let longPressTimer = 0
+let pageUnlockTimer = 0
 let isMounted = false
 let morphProgress = 1
 let suppressClickUntil = 0
@@ -644,6 +645,8 @@ function clearLongPressTimer() {
 }
 
 function lockPageScroll() {
+  window.clearTimeout(pageUnlockTimer)
+  pageUnlockTimer = 0
   if (pageScrollLock.active) return
   const body = document.body
   const html = document.documentElement
@@ -666,8 +669,14 @@ function lockPageScroll() {
   html.classList.add('particle-touch-active')
 }
 
-function unlockPageScroll() {
+function unlockPageScroll(immediate = false) {
+  window.clearTimeout(pageUnlockTimer)
+  pageUnlockTimer = 0
   if (!pageScrollLock.active) return
+  if (!immediate) {
+    pageUnlockTimer = window.setTimeout(() => unlockPageScroll(true), 140)
+    return
+  }
   const body = document.body
   const html = document.documentElement
   const savedScrollY = pageScrollLock.scrollY
@@ -687,6 +696,7 @@ function endTouchInteraction(event) {
   clearLongPressTimer()
   if (touchInteraction.active) {
     event?.preventDefault()
+    event?.stopPropagation()
     suppressClickUntil = performance.now() + 600
   }
   touchInteraction.identifier = null
@@ -696,6 +706,7 @@ function endTouchInteraction(event) {
 }
 
 function handleTouchStart(event) {
+  if (pageScrollLock.active && !touchInteraction.active) unlockPageScroll(true)
   if (event.touches.length !== 1 || event.target instanceof Element && event.target.closest('a, button, input, textarea, select')) {
     endTouchInteraction()
     return
@@ -730,6 +741,7 @@ function handleTouchMove(event) {
   }
 
   event.preventDefault()
+  event.stopPropagation()
   updatePointerPosition(touch.clientX, touch.clientY)
 }
 
@@ -790,6 +802,7 @@ onUnmounted(() => {
   window.removeEventListener('click', handleClick)
   window.clearTimeout(autoTimer)
   endTouchInteraction()
+  unlockPageScroll(true)
   geometry.dispose()
   material.dispose()
 })
@@ -967,12 +980,13 @@ useRenderLoop().onLoop(({ elapsed, delta }) => {
       const screenDx = projectedParticle.x - pointer.screenX
       const screenDy = projectedParticle.y - pointer.screenY
       const distanceSquared = screenDx * screenDx + screenDy * screenDy
-      const influenceRadius = 0.16
+      const influenceRadius = touchInteraction.active ? 0.24 : 0.16
       if (distanceSquared < influenceRadius * influenceRadius) {
         pointerPush.set(screenDx, screenDy, 0)
         if (pointerPush.lengthSq() < 0.000001) pointerPush.set(Math.sin(index), Math.cos(index), 0)
         pointerPush.transformDirection(inversePointsMatrix).normalize()
-        const force = (1 - distanceSquared / (influenceRadius * influenceRadius)) * 0.011 * flightSpeed
+        const forceStrength = touchInteraction.active ? 0.03 : 0.011
+        const force = (1 - distanceSquared / (influenceRadius * influenceRadius)) * forceStrength * flightSpeed
         velocities[offset] += pointerPush.x * force
         velocities[offset + 1] += pointerPush.y * force
         velocities[offset + 2] += pointerPush.z * force
