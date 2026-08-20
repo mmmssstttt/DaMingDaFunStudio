@@ -73,6 +73,17 @@ const touchInteraction = {
   clientY: 0,
   active: false,
 }
+const pageScrollLock = {
+  active: false,
+  scrollY: 0,
+  bodyPosition: '',
+  bodyTop: '',
+  bodyLeft: '',
+  bodyRight: '',
+  bodyWidth: '',
+  bodyOverflow: '',
+  htmlOverflow: '',
+}
 
 const organism = {
   phase: random() * Math.PI * 2,
@@ -632,6 +643,46 @@ function clearLongPressTimer() {
   longPressTimer = 0
 }
 
+function lockPageScroll() {
+  if (pageScrollLock.active) return
+  const body = document.body
+  const html = document.documentElement
+  pageScrollLock.active = true
+  pageScrollLock.scrollY = window.scrollY
+  pageScrollLock.bodyPosition = body.style.position
+  pageScrollLock.bodyTop = body.style.top
+  pageScrollLock.bodyLeft = body.style.left
+  pageScrollLock.bodyRight = body.style.right
+  pageScrollLock.bodyWidth = body.style.width
+  pageScrollLock.bodyOverflow = body.style.overflow
+  pageScrollLock.htmlOverflow = html.style.overflow
+  body.style.position = 'fixed'
+  body.style.top = `${-pageScrollLock.scrollY}px`
+  body.style.left = '0'
+  body.style.right = '0'
+  body.style.width = '100%'
+  body.style.overflow = 'hidden'
+  html.style.overflow = 'hidden'
+  html.classList.add('particle-touch-active')
+}
+
+function unlockPageScroll() {
+  if (!pageScrollLock.active) return
+  const body = document.body
+  const html = document.documentElement
+  const savedScrollY = pageScrollLock.scrollY
+  body.style.position = pageScrollLock.bodyPosition
+  body.style.top = pageScrollLock.bodyTop
+  body.style.left = pageScrollLock.bodyLeft
+  body.style.right = pageScrollLock.bodyRight
+  body.style.width = pageScrollLock.bodyWidth
+  body.style.overflow = pageScrollLock.bodyOverflow
+  html.style.overflow = pageScrollLock.htmlOverflow
+  html.classList.remove('particle-touch-active')
+  pageScrollLock.active = false
+  window.scrollTo(0, savedScrollY)
+}
+
 function endTouchInteraction(event) {
   clearLongPressTimer()
   if (touchInteraction.active) {
@@ -641,7 +692,7 @@ function endTouchInteraction(event) {
   touchInteraction.identifier = null
   touchInteraction.active = false
   pointer.active = false
-  document.documentElement.classList.remove('particle-touch-active')
+  unlockPageScroll()
 }
 
 function handleTouchStart(event) {
@@ -661,7 +712,7 @@ function handleTouchStart(event) {
   longPressTimer = window.setTimeout(() => {
     if (touchInteraction.identifier === null) return
     touchInteraction.active = true
-    document.documentElement.classList.add('particle-touch-active')
+    lockPageScroll()
     updatePointerPosition(touchInteraction.clientX, touchInteraction.clientY)
   }, 450)
 }
@@ -688,6 +739,10 @@ function handleTouchEnd(event) {
   if (!touchStillActive) endTouchInteraction(event)
 }
 
+function handleTouchContextMenu(event) {
+  if (touchInteraction.active) event.preventDefault()
+}
+
 function handleClick(event) {
   if (performance.now() < suppressClickUntil) return
   if (!homeHeroActive) return
@@ -712,10 +767,11 @@ onMounted(() => {
   if (homeHeroActive) setActiveParticleCount(particleCount)
   window.addEventListener('pointermove', updatePointer, { passive: true })
   window.addEventListener('pointerleave', clearPointer)
-  window.addEventListener('touchstart', handleTouchStart, { passive: true })
-  window.addEventListener('touchmove', handleTouchMove, { passive: false })
-  window.addEventListener('touchend', handleTouchEnd, { passive: false })
-  window.addEventListener('touchcancel', handleTouchEnd, { passive: false })
+  document.addEventListener('touchstart', handleTouchStart, { passive: true, capture: true })
+  document.addEventListener('touchmove', handleTouchMove, { passive: false, capture: true })
+  document.addEventListener('touchend', handleTouchEnd, { passive: false, capture: true })
+  document.addEventListener('touchcancel', handleTouchEnd, { passive: false, capture: true })
+  document.addEventListener('contextmenu', handleTouchContextMenu, { capture: true })
   window.addEventListener('scroll', updateScroll, { passive: true })
   window.addEventListener('click', handleClick)
   scheduleAutoEvolution()
@@ -725,10 +781,11 @@ onUnmounted(() => {
   isMounted = false
   window.removeEventListener('pointermove', updatePointer)
   window.removeEventListener('pointerleave', clearPointer)
-  window.removeEventListener('touchstart', handleTouchStart)
-  window.removeEventListener('touchmove', handleTouchMove)
-  window.removeEventListener('touchend', handleTouchEnd)
-  window.removeEventListener('touchcancel', handleTouchEnd)
+  document.removeEventListener('touchstart', handleTouchStart, true)
+  document.removeEventListener('touchmove', handleTouchMove, true)
+  document.removeEventListener('touchend', handleTouchEnd, true)
+  document.removeEventListener('touchcancel', handleTouchEnd, true)
+  document.removeEventListener('contextmenu', handleTouchContextMenu, true)
   window.removeEventListener('scroll', updateScroll)
   window.removeEventListener('click', handleClick)
   window.clearTimeout(autoTimer)

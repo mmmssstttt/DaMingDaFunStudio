@@ -36,6 +36,7 @@ html.particle-touch-active body {
   overflow: hidden;
   overscroll-behavior: none;
   touch-action: none !important;
+  -webkit-touch-callout: none;
 }
 
 .particle-caption {
