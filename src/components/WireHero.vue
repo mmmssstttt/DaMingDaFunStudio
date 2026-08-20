@@ -60,9 +60,19 @@ projectionCamera.position.set(0, 0, 7.5)
 projectionCamera.lookAt(0, 0, 0)
 projectionCamera.updateMatrixWorld(true)
 let autoTimer = 0
+let longPressTimer = 0
 let isMounted = false
 let morphProgress = 1
+let suppressClickUntil = 0
 const rotationFlow = { x: 0, y: 0, z: 0 }
+const touchInteraction = {
+  identifier: null,
+  startX: 0,
+  startY: 0,
+  clientX: 0,
+  clientY: 0,
+  active: false,
+}
 
 const organism = {
   phase: random() * Math.PI * 2,
@@ -594,21 +604,92 @@ function applyRouteProfile(path) {
   scheduleAutoEvolution()
 }
 
-function updatePointer(event) {
+function updatePointerPosition(clientX, clientY) {
   const bounds = heroElement.value?.getBoundingClientRect()
   if (!bounds) return
-  pointer.screenX = ((event.clientX - bounds.left) / bounds.width) * 2 - 1
-  pointer.screenY = 1 - ((event.clientY - bounds.top) / bounds.height) * 2
+  pointer.screenX = ((clientX - bounds.left) / bounds.width) * 2 - 1
+  pointer.screenY = 1 - ((clientY - bounds.top) / bounds.height) * 2
   pointer.lookX = pointer.screenX
   pointer.lookY = -pointer.screenY
   pointer.active = true
+}
+
+function updatePointer(event) {
+  if (event.pointerType === 'touch') return
+  updatePointerPosition(event.clientX, event.clientY)
 }
 
 function clearPointer() {
   pointer.active = false
 }
 
+function findTrackedTouch(touches) {
+  return Array.from(touches).find((touch) => touch.identifier === touchInteraction.identifier)
+}
+
+function clearLongPressTimer() {
+  window.clearTimeout(longPressTimer)
+  longPressTimer = 0
+}
+
+function endTouchInteraction(event) {
+  clearLongPressTimer()
+  if (touchInteraction.active) {
+    event?.preventDefault()
+    suppressClickUntil = performance.now() + 600
+  }
+  touchInteraction.identifier = null
+  touchInteraction.active = false
+  pointer.active = false
+  document.documentElement.classList.remove('particle-touch-active')
+}
+
+function handleTouchStart(event) {
+  if (event.touches.length !== 1 || event.target instanceof Element && event.target.closest('a, button, input, textarea, select')) {
+    endTouchInteraction()
+    return
+  }
+
+  const touch = event.touches[0]
+  touchInteraction.identifier = touch.identifier
+  touchInteraction.startX = touch.clientX
+  touchInteraction.startY = touch.clientY
+  touchInteraction.clientX = touch.clientX
+  touchInteraction.clientY = touch.clientY
+  touchInteraction.active = false
+  clearLongPressTimer()
+  longPressTimer = window.setTimeout(() => {
+    if (touchInteraction.identifier === null) return
+    touchInteraction.active = true
+    document.documentElement.classList.add('particle-touch-active')
+    updatePointerPosition(touchInteraction.clientX, touchInteraction.clientY)
+  }, 450)
+}
+
+function handleTouchMove(event) {
+  const touch = findTrackedTouch(event.touches)
+  if (!touch) return
+  touchInteraction.clientX = touch.clientX
+  touchInteraction.clientY = touch.clientY
+
+  if (!touchInteraction.active) {
+    const distance = Math.hypot(touch.clientX - touchInteraction.startX, touch.clientY - touchInteraction.startY)
+    if (distance > 12) clearLongPressTimer()
+    return
+  }
+
+  event.preventDefault()
+  updatePointerPosition(touch.clientX, touch.clientY)
+}
+
+function handleTouchEnd(event) {
+  if (touchInteraction.identifier === null) return
+  const touchStillActive = findTrackedTouch(event.touches)
+  if (!touchStillActive) endTouchInteraction(event)
+}
+
 function handleClick(event) {
+  if (performance.now() < suppressClickUntil) return
   if (!homeHeroActive) return
   if (event.target.closest('a, button, input, textarea, select')) return
   evolveOrganism()
@@ -631,6 +712,10 @@ onMounted(() => {
   if (homeHeroActive) setActiveParticleCount(particleCount)
   window.addEventListener('pointermove', updatePointer, { passive: true })
   window.addEventListener('pointerleave', clearPointer)
+  window.addEventListener('touchstart', handleTouchStart, { passive: true })
+  window.addEventListener('touchmove', handleTouchMove, { passive: false })
+  window.addEventListener('touchend', handleTouchEnd, { passive: false })
+  window.addEventListener('touchcancel', handleTouchEnd, { passive: false })
   window.addEventListener('scroll', updateScroll, { passive: true })
   window.addEventListener('click', handleClick)
   scheduleAutoEvolution()
@@ -640,9 +725,14 @@ onUnmounted(() => {
   isMounted = false
   window.removeEventListener('pointermove', updatePointer)
   window.removeEventListener('pointerleave', clearPointer)
+  window.removeEventListener('touchstart', handleTouchStart)
+  window.removeEventListener('touchmove', handleTouchMove)
+  window.removeEventListener('touchend', handleTouchEnd)
+  window.removeEventListener('touchcancel', handleTouchEnd)
   window.removeEventListener('scroll', updateScroll)
   window.removeEventListener('click', handleClick)
   window.clearTimeout(autoTimer)
+  endTouchInteraction()
   geometry.dispose()
   material.dispose()
 })

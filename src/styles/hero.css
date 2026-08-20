@@ -31,6 +31,13 @@
   touch-action: pan-y pinch-zoom !important;
 }
 
+html.particle-touch-active,
+html.particle-touch-active body {
+  overflow: hidden;
+  overscroll-behavior: none;
+  touch-action: none !important;
+}
+
 .particle-caption {
   position: absolute;
   right: calc(12vw + 22px);
