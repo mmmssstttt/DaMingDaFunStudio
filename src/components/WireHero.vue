@@ -550,7 +550,7 @@ function monitorPerformance(delta) {
   performanceGovernor.elapsed = 0
   performanceGovernor.frames = 0
 
-  if (fps < 60) {
+  if (fps < 30) {
     if (activeParticleCount > initialParticleCount) setActiveParticleCount(initialParticleCount)
     else if (activeParticleCount > minimumParticleCount) setActiveParticleCount(minimumParticleCount)
     return
