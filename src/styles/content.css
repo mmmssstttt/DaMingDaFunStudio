@@ -172,6 +172,14 @@ h2 {
     radial-gradient(rgba(17, 18, 15, 0.25) 0.8px, transparent 0.8px),
     var(--lime);
   background-size: 5px 5px;
+  overflow: hidden;
+}
+
+.avatar-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
 }
 
 .member-card:nth-child(2) .avatar-frame {
@@ -801,12 +809,15 @@ html.has-gallery-preview {
 }
 
 .portrait {
+  display: block;
   width: min(280px, 58vw);
   aspect-ratio: 1;
   min-height: auto;
   justify-self: center;
   border-radius: 50%;
   background-color: var(--lilac);
+  object-fit: cover;
+  object-position: center;
 }
 
 .site-footer {

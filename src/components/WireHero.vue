@@ -7,11 +7,13 @@ import {
   BufferGeometry,
   Color,
   DynamicDrawUsage,
+  Matrix4,
+  PerspectiveCamera,
   Points,
   ShaderMaterial,
+  Vector3,
 } from 'three'
 
-const lowPower = typeof navigator !== 'undefined' && navigator.hardwareConcurrency <= 4
 const entryTimestamp = Date.now()
 const seedSource = (entryTimestamp ^ Math.floor(entryTimestamp / 4294967296)) >>> 0
 const entrySeedCode = entryTimestamp.toString(36).toUpperCase().slice(-8)
@@ -28,7 +30,11 @@ function createRandom(seed) {
 }
 
 const random = createRandom(seedSource)
-const particleCount = Math.round((lowPower ? 520 : 920) + random() * (lowPower ? 260 : 620))
+const initialParticleCount = 1000
+const particleCount = 8000
+let activeParticleCount = initialParticleCount
+const visibleParticleCount = ref(activeParticleCount)
+const minimumParticleCount = 300
 const positions = new Float32Array(particleCount * 3)
 const targets = new Float32Array(particleCount * 3)
 const previousTargets = new Float32Array(particleCount * 3)
@@ -41,10 +47,18 @@ const flowProgress = new Float32Array(particleCount)
 const pointer = { screenX: 0, screenY: 0, lookX: 0, lookY: 0, active: false }
 const scrollState = { target: 0, value: 0 }
 const route = useRoute()
+let homeHeroActive = route.path === '/' && window.scrollY < window.innerHeight * 0.75
 const heroElement = ref(null)
 const generation = ref(1)
 const organismId = ref(entrySeedCode)
 const geometry = new BufferGeometry()
+const projectionCamera = new PerspectiveCamera(50, 1, 0.1, 100)
+const projectedParticle = new Vector3()
+const pointerPush = new Vector3()
+const inversePointsMatrix = new Matrix4()
+projectionCamera.position.set(0, 0, 7.5)
+projectionCamera.lookAt(0, 0, 0)
+projectionCamera.updateMatrixWorld(true)
 let autoTimer = 0
 let isMounted = false
 let morphProgress = 1
@@ -199,6 +213,7 @@ geometry.setAttribute('color', new BufferAttribute(colors, 3))
 const energyAttribute = new BufferAttribute(energies, 1)
 energyAttribute.setUsage(DynamicDrawUsage)
 geometry.setAttribute('energy', energyAttribute)
+geometry.setDrawRange(0, activeParticleCount)
 
 const material = new ShaderMaterial({
   transparent: true,
@@ -261,7 +276,7 @@ function generatedPosition(index) {
   if (genome.topology === 'spiral') {
     const arm = index % genome.arms
     const localIndex = Math.floor(index / genome.arms)
-    const localCount = Math.ceil(particleCount / genome.arms)
+    const localCount = Math.ceil(activeParticleCount / genome.arms)
     const progress = (localIndex + 0.5) / localCount
     const hashA = ((localIndex * 47 + arm * 19) % 103) / 102 - 0.5
     const hashB = ((localIndex * 71 + arm * 31) % 107) / 106 - 0.5
@@ -278,7 +293,7 @@ function generatedPosition(index) {
   if (genome.topology === 'helix') {
     const strand = index % genome.coilCount
     const localIndex = Math.floor(index / genome.coilCount)
-    const localCount = Math.ceil(particleCount / genome.coilCount)
+    const localCount = Math.ceil(activeParticleCount / genome.coilCount)
     const progress = localIndex / Math.max(1, localCount - 1)
     const t = progress * 2 - 1
     const phase = t * Math.PI * genome.turns + strand * Math.PI * 2 / genome.coilCount + genome.phaseA
@@ -292,7 +307,7 @@ function generatedPosition(index) {
   }
 
   if (genome.topology === 'vortex') {
-    const progress = (index + 0.5) / particleCount
+    const progress = (index + 0.5) / activeParticleCount
     const height = progress * 2 - 1
     const radius = 0.28 + Math.pow(progress, 0.78) * 2.45
     const angle = progress * Math.PI * 2 * (genome.turns + 1.8) + genome.phaseA + ((index * 41) % 43) / 43 * 0.28
@@ -307,7 +322,7 @@ function generatedPosition(index) {
   if (genome.topology === 'branch') {
     const branch = index % genome.branchCount
     const localIndex = Math.floor(index / genome.branchCount)
-    const localCount = Math.ceil(particleCount / genome.branchCount)
+    const localCount = Math.ceil(activeParticleCount / genome.branchCount)
     const progress = localIndex / Math.max(1, localCount - 1)
     const branchAngle = genome.phaseA + branch * Math.PI * 2 / genome.branchCount
     const bend = Math.sin(progress * Math.PI * (1.2 + genome.turns * 0.28) + genome.phaseB + branch) * 0.34
@@ -324,7 +339,7 @@ function generatedPosition(index) {
   if (genome.topology === 'shell') {
     const layer = index % genome.coilCount
     const localIndex = Math.floor(index / genome.coilCount)
-    const localCount = Math.ceil(particleCount / genome.coilCount)
+    const localCount = Math.ceil(activeParticleCount / genome.coilCount)
     const progress = localIndex / Math.max(1, localCount - 1)
     const angle = progress * Math.PI * 2 * genome.turns + genome.phaseA + layer * 0.13
     const radius = 0.2 + Math.pow(progress, 1.12) * 2.65
@@ -339,7 +354,7 @@ function generatedPosition(index) {
   if (genome.topology === 'filament') {
     const strand = index % genome.strandCount
     const localIndex = Math.floor(index / genome.strandCount)
-    const localCount = Math.ceil(particleCount / genome.strandCount)
+    const localCount = Math.ceil(activeParticleCount / genome.strandCount)
     const progress = localIndex / Math.max(1, localCount - 1)
     const t = progress * 2 - 1
     const strandPhase = genome.phaseA + strand * Math.PI * 2 / genome.strandCount
@@ -356,8 +371,8 @@ function generatedPosition(index) {
   }
 
   if (genome.topology === 'ring') {
-    const row = Math.max(8, Math.floor(Math.sqrt(particleCount)))
-    const rows = Math.ceil(particleCount / row)
+    const row = Math.max(8, Math.floor(Math.sqrt(activeParticleCount)))
+    const rows = Math.ceil(activeParticleCount / row)
     const u = (index % row) / row * Math.PI * 2
     const v = Math.floor(index / row) / rows * Math.PI * 2
     const major = genome.ringMajor + Math.sin(u * genome.knotCount + genome.phaseA) * genome.amplitudeA * 0.72
@@ -374,7 +389,7 @@ function generatedPosition(index) {
     const agentIndex = index % genome.agents.length
     const agent = genome.agents[agentIndex]
     const localIndex = Math.floor(index / genome.agents.length)
-    const localCount = Math.ceil(particleCount / genome.agents.length)
+    const localCount = Math.ceil(activeParticleCount / genome.agents.length)
     const progress = localIndex / Math.max(1, localCount - 1)
     const hashA = ((localIndex * 37 + agentIndex * 17) % 101) / 100
     const hashB = ((localIndex * 61 + agentIndex * 29) % 97) / 96
@@ -395,7 +410,7 @@ function generatedPosition(index) {
   const cellIndex = index % genome.cells.length
   const cell = genome.cells[cellIndex]
   const localIndex = Math.floor(index / genome.cells.length)
-  const localCount = Math.ceil(particleCount / genome.cells.length)
+  const localCount = Math.ceil(activeParticleCount / genome.cells.length)
   const progress = Math.min(0.9999, (localIndex + 0.5) / localCount)
   const goldenAngle = Math.PI * (3 - Math.sqrt(5))
   const latitudeY = 1 - progress * 2
@@ -435,11 +450,11 @@ function updateFlowPaths() {
   if (genome.topology === 'helix' || genome.topology === 'shell') stride = genome.coilCount
   if (genome.topology === 'branch') stride = genome.branchCount
 
-  for (let index = 0; index < particleCount; index += 1) {
+  for (let index = 0; index < activeParticleCount; index += 1) {
     if (genome.topology === 'ring') {
-      const row = Math.max(8, Math.floor(Math.sqrt(particleCount)))
+      const row = Math.max(8, Math.floor(Math.sqrt(activeParticleCount)))
       const rowStart = Math.floor(index / row) * row
-      const rowLength = Math.min(row, particleCount - rowStart)
+      const rowLength = Math.min(row, activeParticleCount - rowStart)
       const localIndex = index - rowStart
       flowPrevious[index] = rowStart + Math.max(0, localIndex - 1)
       flowNext[index] = rowStart + Math.min(rowLength - 1, localIndex + 1)
@@ -449,15 +464,15 @@ function updateFlowPaths() {
 
     const localIndex = Math.floor(index / stride)
     const group = index % stride
-    const localCount = Math.ceil((particleCount - group) / stride)
+    const localCount = Math.ceil((activeParticleCount - group) / stride)
     flowPrevious[index] = Math.max(group, group + Math.max(0, localIndex - 1) * stride)
-    flowNext[index] = Math.min(particleCount - 1, group + Math.min(localCount - 1, localIndex + 1) * stride)
+    flowNext[index] = Math.min(activeParticleCount - 1, group + Math.min(localCount - 1, localIndex + 1) * stride)
     flowProgress[index] = localIndex / Math.max(1, localCount - 1)
   }
 }
 
 function gather() {
-  for (let index = 0; index < particleCount; index += 1) {
+  for (let index = 0; index < activeParticleCount; index += 1) {
     const offset = index * 3
     const [x, y, z] = generatedPosition(index)
     targets[offset] = x
@@ -465,6 +480,83 @@ function gather() {
     targets[offset + 2] = z
   }
   updateFlowPaths()
+}
+
+function setActiveParticleCount(nextCount) {
+  const clampedCount = Math.max(minimumParticleCount, Math.min(particleCount, Math.round(nextCount)))
+  if (clampedCount === activeParticleCount) return
+
+  const previousCount = activeParticleCount
+  previousTargets.set(targets)
+  activeParticleCount = clampedCount
+  gather()
+
+  if (activeParticleCount > previousCount) {
+    for (let index = previousCount; index < activeParticleCount; index += 1) {
+      const offset = index * 3
+      positions[offset] = targets[offset]
+      positions[offset + 1] = targets[offset + 1]
+      positions[offset + 2] = targets[offset + 2]
+      previousTargets[offset] = targets[offset]
+      previousTargets[offset + 1] = targets[offset + 1]
+      previousTargets[offset + 2] = targets[offset + 2]
+      velocities[offset] = 0
+      velocities[offset + 1] = 0
+      velocities[offset + 2] = 0
+      energies[index] = 0.5
+    }
+  }
+
+  geometry.setDrawRange(0, activeParticleCount)
+  visibleParticleCount.value = activeParticleCount
+  morphProgress = 0
+}
+
+const performanceGovernor = {
+  elapsed: 0,
+  frames: 0,
+}
+
+function resetPerformanceGovernor() {
+  performanceGovernor.elapsed = 0
+  performanceGovernor.frames = 0
+}
+
+function syncHomeParticleState(path = route.path) {
+  const nextActive = path === '/' && window.scrollY < window.innerHeight * 0.75
+  if (nextActive === homeHeroActive) return
+  const wasActive = homeHeroActive
+  const countBeforeLeaving = activeParticleCount
+  homeHeroActive = nextActive
+  resetPerformanceGovernor()
+
+  if (wasActive && !nextActive) {
+    if (countBeforeLeaving >= initialParticleCount) setActiveParticleCount(initialParticleCount)
+    return
+  }
+
+  if (!wasActive && nextActive && activeParticleCount >= initialParticleCount) {
+    setActiveParticleCount(particleCount)
+  }
+}
+
+function monitorPerformance(delta) {
+  if (!homeHeroActive || document.hidden || delta <= 0 || delta > 0.2) return
+  performanceGovernor.elapsed += delta
+  performanceGovernor.frames += 1
+  if (performanceGovernor.elapsed < 0.5) return
+
+  const fps = performanceGovernor.frames / performanceGovernor.elapsed
+  performanceGovernor.elapsed = 0
+  performanceGovernor.frames = 0
+
+  if (fps < 60) {
+    if (activeParticleCount > initialParticleCount) setActiveParticleCount(initialParticleCount)
+    else if (activeParticleCount > minimumParticleCount) setActiveParticleCount(minimumParticleCount)
+    return
+  }
+
+  if (fps > 100 && activeParticleCount < particleCount) setActiveParticleCount(particleCount)
 }
 
 function evolveOrganism(profile = activeGenomeProfile) {
@@ -478,9 +570,11 @@ function evolveOrganism(profile = activeGenomeProfile) {
 function updateScroll() {
   const scrollRange = Math.max(1, document.documentElement.scrollHeight - window.innerHeight)
   scrollState.target = Math.min(1, Math.max(0, window.scrollY / scrollRange))
+  syncHomeParticleState()
 }
 
 function applyRouteProfile(path) {
+  syncHomeParticleState(path)
   const slug = path.includes('/work/') ? path.split('/work/')[1]?.split('/')[0] : ''
   const profile = workProfiles[slug]
   activeGenomeProfile = profile?.genome ?? 'home'
@@ -515,6 +609,7 @@ function clearPointer() {
 }
 
 function handleClick(event) {
+  if (!homeHeroActive) return
   if (event.target.closest('a, button, input, textarea, select')) return
   evolveOrganism()
   scheduleAutoEvolution()
@@ -533,6 +628,7 @@ onMounted(() => {
   gather()
   previousTargets.set(targets)
   updateScroll()
+  if (homeHeroActive) setActiveParticleCount(particleCount)
   window.addEventListener('pointermove', updatePointer, { passive: true })
   window.addEventListener('pointerleave', clearPointer)
   window.addEventListener('scroll', updateScroll, { passive: true })
@@ -628,6 +724,7 @@ function updateFlockAgents(elapsed, frameScale) {
 }
 
 useRenderLoop().onLoop(({ elapsed, delta }) => {
+  monitorPerformance(delta || 1 / 60)
   const attraction = 0.009
   const damping = 0.7
   const flightSpeed = organism.flowSpeed
@@ -644,16 +741,12 @@ useRenderLoop().onLoop(({ elapsed, delta }) => {
   const twistCos = Math.cos(twistAngle)
   const twistSin = Math.sin(twistAngle)
   const canvasBounds = heroElement.value?.getBoundingClientRect()
-  const projectionAspect = canvasBounds ? canvasBounds.width / Math.max(1, canvasBounds.height) : window.innerWidth / window.innerHeight
-  const tanHalfFov = Math.tan(25 * Math.PI / 180)
-  const rotationCosX = Math.cos(points.rotation.x)
-  const rotationSinX = Math.sin(points.rotation.x)
-  const rotationCosY = Math.cos(points.rotation.y)
-  const rotationSinY = Math.sin(points.rotation.y)
-  const rotationCosZ = Math.cos(points.rotation.z)
-  const rotationSinZ = Math.sin(points.rotation.z)
+  projectionCamera.aspect = canvasBounds ? canvasBounds.width / Math.max(1, canvasBounds.height) : window.innerWidth / window.innerHeight
+  projectionCamera.updateProjectionMatrix()
+  points.updateMatrixWorld(true)
+  inversePointsMatrix.copy(points.matrixWorld).invert()
 
-  for (let index = 0; index < particleCount; index += 1) {
+  for (let index = 0; index < activeParticleCount; index += 1) {
     const offset = index * 3
     const phase = index * 0.017 + evolution
     let baseX = (previousTargets[offset] + (targets[offset] - previousTargets[offset]) * morphEase) * breathe
@@ -720,38 +813,22 @@ useRenderLoop().onLoop(({ elapsed, delta }) => {
     velocities[offset + 2] += (desiredZ - positions[offset + 2]) * attraction * flightSpeed
 
     if (pointer.active) {
-      const localX = positions[offset]
-      const localY = positions[offset + 1]
-      const localZ = positions[offset + 2]
-      const rotatedY1 = localY * rotationCosX - localZ * rotationSinX
-      const rotatedZ1 = localY * rotationSinX + localZ * rotationCosX
-      const rotatedX2 = localX * rotationCosY + rotatedZ1 * rotationSinY
-      const rotatedZ2 = -localX * rotationSinY + rotatedZ1 * rotationCosY
-      const screenWorldX = rotatedX2 * rotationCosZ - rotatedY1 * rotationSinZ
-      const screenWorldY = rotatedX2 * rotationSinZ + rotatedY1 * rotationCosZ
-      const depth = Math.max(1, 7.5 - rotatedZ2)
-      const halfHeight = tanHalfFov * depth
-      const particleScreenX = screenWorldX / (halfHeight * projectionAspect)
-      const particleScreenY = screenWorldY / halfHeight
-      const screenDx = particleScreenX - pointer.screenX
-      const screenDy = particleScreenY - pointer.screenY
+      projectedParticle
+        .set(positions[offset], positions[offset + 1], positions[offset + 2])
+        .applyMatrix4(points.matrixWorld)
+        .project(projectionCamera)
+      const screenDx = projectedParticle.x - pointer.screenX
+      const screenDy = projectedParticle.y - pointer.screenY
       const distanceSquared = screenDx * screenDx + screenDy * screenDy
       const influenceRadius = 0.16
       if (distanceSquared < influenceRadius * influenceRadius) {
-        const worldPushX = screenDx * halfHeight * projectionAspect
-        const worldPushY = screenDy * halfHeight
-        const inverseZx = worldPushX * rotationCosZ + worldPushY * rotationSinZ
-        const inverseZy = -worldPushX * rotationSinZ + worldPushY * rotationCosZ
-        const inverseYx = inverseZx * rotationCosY
-        const inverseYz = inverseZx * rotationSinY
-        const pushX = inverseYx
-        const pushY = inverseZy * rotationCosX + inverseYz * rotationSinX
-        const pushZ = -inverseZy * rotationSinX + inverseYz * rotationCosX
-        const pushLength = Math.max(0.001, Math.hypot(pushX, pushY, pushZ))
+        pointerPush.set(screenDx, screenDy, 0)
+        if (pointerPush.lengthSq() < 0.000001) pointerPush.set(Math.sin(index), Math.cos(index), 0)
+        pointerPush.transformDirection(inversePointsMatrix).normalize()
         const force = (1 - distanceSquared / (influenceRadius * influenceRadius)) * 0.011 * flightSpeed
-        velocities[offset] += pushX / pushLength * force
-        velocities[offset + 1] += pushY / pushLength * force
-        velocities[offset + 2] += pushZ / pushLength * force
+        velocities[offset] += pointerPush.x * force
+        velocities[offset + 1] += pointerPush.y * force
+        velocities[offset + 2] += pointerPush.z * force
       }
     }
 
@@ -790,7 +867,7 @@ useRenderLoop().onLoop(({ elapsed, delta }) => {
       <primitive :object="points" />
     </TresCanvas>
     <div class="particle-caption" aria-hidden="true">
-      <span>GENERATIVE LIFE · {{ particleCount }} PARTICLES</span>
+      <span>GENERATIVE LIFE · {{ visibleParticleCount }} PARTICLES</span>
       <b>LIFEFORM {{ organismId }} · GEN {{ generation }} · {{ genome.topology.toUpperCase() }}</b>
     </div>
   </div>

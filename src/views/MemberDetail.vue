@@ -41,9 +41,8 @@ onActivated(() => {
   <main class="detail-shell">
     <button class="back-link" :class="{ 'is-leaving': isBackLeaving }" type="button" @click="goBack">{{ backLabel }}</button>
     <section class="detail-layout member-detail">
-      <div class="detail-visual portrait">{{ member.name }} 頭貼</div>
+      <img class="detail-visual portrait" :src="member.portrait" :alt="`${member.name} 的頭貼`">
       <article class="detail-copy">
-        <p>成員個別頁面</p>
         <h1>{{ member.name }}</h1>
         <h2>{{ member.role }}</h2>
 

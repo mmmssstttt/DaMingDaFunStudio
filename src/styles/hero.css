@@ -130,6 +130,10 @@ h1 small {
   font-weight: 650;
 }
 
+.studio-statement span {
+  white-space: nowrap;
+}
+
 .corner-tags {
   position: absolute;
   top: 0;
@@ -151,6 +155,13 @@ h1 small {
   box-shadow: 0 8px 24px rgba(17, 18, 15, 0.06);
   background: rgba(255, 255, 255, 0.68);
   backdrop-filter: blur(8px);
+}
+
+.corner-tags button:hover,
+.corner-tags button:focus-visible,
+.corner-tags button.is-pointer-hover {
+  color: #ffffff;
+  background: var(--ink);
 }
 
 

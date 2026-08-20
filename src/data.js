@@ -143,6 +143,7 @@ export const members = [
   {
     slug: 'sho',
     name: 'Sho',
+    portrait: '/images/members/sho.png',
     role: '商務拓展經理',
     experience: ['資源媒合', '客情維繫', '以大明大 Fun 的活力推進合作'],
     projects: ['劍道比賽計分板設計'],
@@ -150,6 +151,7 @@ export const members = [
   {
     slug: 'eleanor',
     name: 'Eleanor',
+    portrait: '/images/members/eleanor.png',
     role: '專案管理、體驗設計師',
     experience: ['團隊領導', '邏輯分析', '快速掌握問題並梳理專案方向'],
     projects: ['摺疊攤車設計'],
@@ -157,6 +159,7 @@ export const members = [
   {
     slug: 'alvin',
     name: 'Alvin',
+    portrait: '/images/members/alvin.png',
     role: '創意技術總監',
     experience: ['3D 建模', '機構設計', '產品打樣與細節整合'],
     projects: ['狐蝠生態教具箱'],

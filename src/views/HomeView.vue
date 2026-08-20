@@ -29,7 +29,11 @@ const { copied, copy: copyEmail } = useClipboard(email)
           </h1>
         </header>
 
-        <p class="studio-statement">每一件好的設計，都始於理解，終於綻放。</p>
+        <p class="studio-statement">
+          <span>每一件好的設計，</span><br />
+          <span>都始於理解，</span><br />
+          <span>終於綻放。</span>
+        </p>
 
         <nav class="corner-tags" aria-label="首頁段落">
           <button type="button" @click="smoothScrollTo('works')">商業作品</button>
@@ -63,7 +67,9 @@ const { copied, copy: copyEmail } = useClipboard(email)
       </div>
       <div class="member-grid">
         <RouterLink v-for="member in members" :key="member.slug" class="member-card" :to="`/member/${member.slug}`">
-          <div class="avatar-frame">成員頭貼</div>
+          <div class="avatar-frame">
+            <img :src="member.portrait" :alt="`${member.name} 的頭貼`" loading="lazy">
+          </div>
           <h3>{{ member.name }}</h3>
           <p>{{ member.role }}</p>
         </RouterLink>
